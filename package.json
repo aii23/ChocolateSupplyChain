@@ -1,0 +1,22 @@
+{
+  "name": "chocolate-supply-chain",
+  "version": "1.0.0",
+  "main": "app.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@openzeppelin/contracts": "^3.4.1",
+    "chai": "^4.3.4"
+  },
+  "devDependencies": {
+    "bn.js": "^5.2.0",
+    "chai-bn": "^0.2.1"
+  }
+}

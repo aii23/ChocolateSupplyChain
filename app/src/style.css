@@ -1,0 +1,30 @@
+.graphic__item {
+	display: inline-block;
+}
+
+#parameters td {
+	border: 1px solid black;
+}
+
+#info {
+	float: left;
+}
+
+#form {
+	float: left;
+	padding-left: 20px;
+}
+
+/* Graphic__item classes */
+.inactive {
+	opacity: 0.1;
+}
+
+.in_process {
+	filter: invert(86%) sepia(11%) saturate(4025%) hue-rotate(48deg) brightness(91%) contrast(106%);
+}
+
+.completed {
+	filter: invert(94%) sepia(7%) saturate(2367%) hue-rotate(48deg) brightness(103%) contrast(106%);
+}
+

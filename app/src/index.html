@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Chocolate Supply</title>
+    </head>
+    <body>
+        <div width='100%' id='graphics'>
+            <div id='Plant' class='graphic__item inactive'>
+                <img src='plantation.png' height='100' width='100'>
+            </div>
+            <div id='PlantArrow' class='graphic__item inactive'>
+                <img src='images/arrow.png' height='100' width='100'>
+            </div>
+            <div id='Ship' class='graphic__item inactive'>
+                <img src='images/ship.png' height='100' width='100'>
+            </div>
+            <div id='ShipArrow' class='graphic__item inactive'>
+                <img src='images/arrow.png' height='100' width='100'>
+            </div>
+            <div id='Facory' class='graphic__item inactive'>
+                <img src='images/factory.png' height='100' width='100'>
+            </div>
+            <div id='FactoryArrow' class='graphic__item inactive'>
+                <img src='images/arrow.png' height='100' width='100'>
+            </div>
+            <div id='Seller' class='graphic__item inactive'>
+                <img src='images/shop.png' height='100' width='100'>
+            </div>
+            <div id='SellerArrow' class='graphic__item inactive'>
+                <img src='images/arrow.png' height='100' width='100'>
+            </div>
+        </div>
+        <div id='info' float='left'>
+            <table id='parameters' frame='border'>
+                <tbody>
+                    <tr>
+                        <th>Beans Id</th>
+                        <td id='BeansId' width='100px'></td>
+
+                        <th>Product Id</th>
+                        <td  id='ProductId' width='100px'></td>
+                    </tr>
+                    <tr>
+                        <th>Beans Weight</th>
+                        <td id='BeansWeight'></td>
+
+                        <th>Product Description</th>
+                        <td id='ProductDescription'></td>
+                    </tr>
+                    <tr>
+                        <th>Brand</th>
+                        <td id='Brand'></td>
+
+                        <th>Product Type</th>
+                        <td id='ProductType'></td>
+                    </tr>
+                    <tr>
+                        <th>Weight Measure</th>
+                        <td id='WeightMeasure'></td>
+
+                        <th>Product State</th>
+                        <td id='ProductState'></td>
+                    </tr>
+                    <tr>
+                        <th>State</th>
+                        <td id='State'></td>
+
+                        <th>Seller</th>
+                        <td id='Seller'></td>
+                    </tr>
+                    <tr>
+                        <th>Country</th>
+                        <td id='Country'></td>
+                    </tr>
+                    <tr>
+                        <th>Planter</th>
+                        <td id='Planter'></td>
+                    </tr>
+                    <tr>
+                        <th>Carrier</th>
+                        <td id='Carrier'></td>
+                    </tr>
+                    <tr>
+                        <th>Manufacturer</th>
+                        <td id='Manufacturer'></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id='form' float='left'>
+            <div>
+                <p>
+                    <input id='queryBeansId' placeholder='Beans Id'>
+                    <button id='queryBeansButton' onclick='App.queryBeans()'>
+                        Query Beans
+                    </button>
+                </p>
+                <p>
+                    <input id='queryProductId' placeholder="Product Id">
+                    <button id='queryProductButton' onclick='App.queryProduct()'>
+                        Query Product
+                    </button>
+                </p>
+                <p>
+                    <input id='in_brand' placeholder='Brand'>
+                    <input id='in_country' placeholder='Country'>
+                    <button id='plantButton' onclick='App.plant()'>
+                        Plant
+                    </button>
+                </p>
+                <p>
+                    <input id='in_weight' placeholder='Weight'>
+                    <input id='in_measure' placeholder='Weight Measure'>
+                    <button id='collectButton' onclick='App.collect()' disabled>
+                        Сollect
+                    </button>
+                </p>
+                <p>
+                    <input id='in_carrier' placeholder='Carrier Address'>
+                    <button id='setCarrierButton' onclick='App.setCarrier()' disabled>
+                        Set Carrier
+                    </button>
+                </p>
+                <p>
+                    <button id='startTranferButton' onclick='App.startTransfer()' disabled>
+                        Start Transfer
+                    </button>
+                </p>
+                <p>
+                    <input id='in_manufacturer' placeholder='Manufecturer Address'>
+                    <button id='setManufactirerButton' onclick='App.setManufacturer()' disabled>
+                        Set Manufacturer
+                    </button>
+                </p>
+                <p>
+                    <button id='endTransferButton' onclick='App.endTransfer()' disabled>
+                        End Transfer
+                    </button>
+                </p>
+                <p>
+                    <input id='in_description' placeholder='Product Description'>
+                    <input id='in_productType' placeholder='Product Type'>
+                    <button id='manufacureButton' onclick='App.manufacture()' disabled>
+                        Manufacture
+                    </button>
+                </p>
+                <p>
+                    <input id='in_seller' placeholder='Seller Address'>
+                    <button id='setSellerButton' onclick='App.setSeller()' disabled>
+                        Set Seller
+                    </button>
+                </p>
+                <p>
+                    <button id='distributeButton' onclick='App.distribute()' disabled>
+                        Ditribute
+                    </button>
+                </p>
+                <p>
+                    <button id='sellButton' onclick='App.sell()' disabled>
+                        Sell
+                    </button>
+                </p>
+            </div>
+        </div>
+    <script src="./bundle.js" type='text/javascript'></script>
+    </body>
+</html>
