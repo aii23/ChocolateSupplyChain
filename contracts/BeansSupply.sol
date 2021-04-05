@@ -18,11 +18,10 @@ contract BeansSupply {
 
 	uint lastBeans;
 
-	event Planted(uint sku, address indexed planter);
-	event Collected(uint sku); 
-	event InTransfer(uint sku);
-	event Transfered(uint sku);
-	event manufactured(uint sku);
+	event Planted(uint indexed sku, address indexed planter);
+	event Collected(uint indexed sku); 
+	event InTransfer(uint indexed sku);
+	event Transfered(uint indexed sku);
 
 	modifier onlyBeansState(uint _sku, BeansState _state) {
 		require(beans[_sku].state == _state);
@@ -116,6 +115,7 @@ contract BeansSupply {
 		address carrier,
 		address manufacturer
 	) {
+		require(_sku < lastBeans);
 		Beans memory curBeans = beans[_sku];
 		sku = curBeans.sku;
 		weight = curBeans.weight;

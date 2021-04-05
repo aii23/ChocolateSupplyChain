@@ -18,9 +18,9 @@ contract ProductSupply is BeansSupply {
 
 	uint lastProduct;
 
-	event Manufactured(uint sku, address indexed manufacturer);
-	event Distributed(uint sku);
-	event Sold(uint sku);
+	event Manufactured(uint indexed sku, address indexed manufacturer);
+	event Distributed(uint indexed sku);
+	event Sold(uint indexed sku);
 
 	modifier onlyProductState(uint _sku, ProductState _state) {
 		require(products[_sku].state == _state);
@@ -92,6 +92,7 @@ contract ProductSupply is BeansSupply {
 		address manufacturer,
 		address seller
 	) {
+		require(_sku < lastProduct);
 		Product memory product = products[_sku];
 		sku = product.sku;
 		beansSku = product.beansSku;
@@ -111,7 +112,15 @@ contract ProductSupply is BeansSupply {
 		address manufacturer,
 		address seller
 	) {
+		require(_beansSku < lastBeans);
 
+		uint curSku = 0;
+
+		while(products[curSku].beansSku != _beansSku) {
+			curSku++;
+		}
+
+		return getProduct(curSku);
 	}
 
 	function getBeansByProduct(uint _productSku) view public returns(
@@ -125,7 +134,7 @@ contract ProductSupply is BeansSupply {
 		address carrier,
 		address manufacturer
 	) {
-
+		return getBeans(products[_productSku].beansSku);
 	}
 
 	function bytes32ToString(bytes32 _bytes32) public pure returns (string memory) {
