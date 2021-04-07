@@ -195,7 +195,7 @@ describe('Simple Forward Process', async () => {
 
 	it('Can distribute', async () => {
 		let instance = await ProductSupply.deployed();
-		await instance.ditribute(productId, { from: seller });
+		await instance.distribute(productId, { from: seller });
 		let product = await instance.getProduct(productId);
 		// let product = getProduct(productId);
 		assert.equal(product.state, 'Distributed');

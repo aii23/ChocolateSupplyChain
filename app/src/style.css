@@ -15,6 +15,10 @@
 	padding-left: 20px;
 }
 
+#form div p {
+	margin-top: 0px;
+}
+
 /* Graphic__item classes */
 .inactive {
 	opacity: 0.1;
@@ -25,6 +29,6 @@
 }
 
 .completed {
-	filter: invert(94%) sepia(7%) saturate(2367%) hue-rotate(48deg) brightness(103%) contrast(106%);
+	filter: invert(93%) sepia(6%) saturate(3286%) hue-rotate(9deg) brightness(97%) contrast(119%);
 }
 

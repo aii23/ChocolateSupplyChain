@@ -20,7 +20,9 @@ contract BeansSupply {
 
 	event Planted(uint indexed sku, address indexed planter);
 	event Collected(uint indexed sku); 
+	event CarrierSetted(uint indexed sku);
 	event InTransfer(uint indexed sku);
+	event ManufacturerSetted(uint indexed sku);
 	event Transfered(uint indexed sku);
 
 	modifier onlyBeansState(uint _sku, BeansState _state) {
@@ -72,6 +74,7 @@ contract BeansSupply {
 
 	function setCarrier(uint _sku, address _carrier) onlyBeansState(_sku, BeansState.Collected) onlyBeansPlanter(_sku) public {
 		beans[_sku].carrier = _carrier;
+		emit CarrierSetted(_sku);
 	}
 
 	function startTransfer(uint _sku) onlyBeansState(_sku, BeansState.Collected) onlyBeansCarrier(_sku) public {
@@ -81,6 +84,7 @@ contract BeansSupply {
 
 	function setManufacturer(uint _sku, address _manufacturer) onlyBeansState(_sku, BeansState.InTransfer) onlyBeansCarrier(_sku) public {
 		beans[_sku].manufacturer = _manufacturer;
+		emit ManufacturerSetted(_sku);
 	}
 
 	function endTransfer(uint _sku) onlyBeansState(_sku, BeansState.InTransfer) onlyBeansManufectirer(_sku) public {
@@ -115,7 +119,7 @@ contract BeansSupply {
 		address carrier,
 		address manufacturer
 	) {
-		require(_sku < lastBeans);
+		require(_sku < lastBeans, 'Invalid sku');
 		Beans memory curBeans = beans[_sku];
 		sku = curBeans.sku;
 		weight = curBeans.weight;

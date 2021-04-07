@@ -47,13 +47,24 @@ const App = {
 
     updateBeansEvents: [
     	'Collected',
+        'CarrierSetted',
     	'InTransfer',
+        'ManufacturerSetted',
     	'Transfered'
     ],
 
     updateProductEvents: [
+        'SellerSetted',
     	'Distributed',
     	'Sold'
+    ],
+
+    beansFields: [
+        "sku", "weight", "brand", "weightMeasure", "state", "country", "planter", "carrier", "manufacturer"
+    ],
+
+    productFields: [
+        "sku", "description", "productType", "state", "seller"
     ],
 
     start: async function() {
@@ -61,8 +72,11 @@ const App = {
 
         try {
             // get contract instance
+            console.log('Start');
             const networkId = await web3.eth.net.getId();
+            console.log(networkId);
             const deployedNetwork = productSupplyArtifact.networks[networkId];
+            console.log(deployedNetwork);
             this.meta = new web3.eth.Contract(
                 productSupplyArtifact.abi,
                 deployedNetwork.address,
@@ -78,20 +92,21 @@ const App = {
 
     // Method for button #queryBeansButton
     queryBeans() {
-        let beansId = this.getInput('queryBeansId');
+        let beansId = this.getAndClearInput('queryBeansId');
         this.getDataAndRefresh('Beans', beansId);
+        this.setEvents();
     },
 
     // Method for button #queryProductButton
     queryProduct() {
-        let productId = this.getInput('queryProductId');
-        this.getDataAndRefresh('Product', productId)
+        let productId = this.getAndClearInput('queryProductId');
+        this.getDataAndRefresh('Product', productId);
+        this.setEvents();
     },
 
     getDataAndRefresh: async function(dataType, id) {
     	console.log(`${dataType} : ${id}`);
         if (dataType == 'Beans') {
-        	console.log(id);
             await this.getDataByBeans(id);
         } else if (dataType == 'Product') {
             await this.getDataByProduct(id);
@@ -103,9 +118,9 @@ const App = {
         console.log(this.product);
 
         this.updateData(); 
-        //this.updateGraphics();
-        //this.updateButtons();
-        //this.setEvents();
+        this.updateGraphics();
+        this.updateButtons();
+        // this.setEvents();
     },
 
     getDataByBeans: async function(beansId) {
@@ -113,25 +128,42 @@ const App = {
         const { getProductByBeans } = this.meta.methods;
 
         try {
-        	console.log(getBeans);
-        	console.log(beansId)
-        	console.log(await getBeans(beansId).call());
             this.beans = await getBeans(beansId).call();
-            console.log(this.beans);
+            this.product = this.getEmptyProduct();
+        } catch(e) {
+            console.log(e);
+            this.beans = this.getEmptyBeans(); 
+            this.beans.sku = 'Invalid sku';
+            this.product = this.getEmptyProduct();
+            return;
+        }
+        /*
+        try {
             this.product = await getProductByBeans(beansId).call();
         } catch(e) {
             console.log(e);
+            this.product = this.getEmptyProduct();
         }
+        */
     },
 
-    getDataByProduct: async function(ptoductId) {
+    getDataByProduct: async function(productId) {
         const { getProduct } = this.meta.methods;
         const { getBeansByProduct } = this.meta.methods;
 
         try {
             this.beans = await getBeansByProduct(productId).call();
+        } catch (e) {
+            console.log(e);
+            this.beans = this.getEmptyBeans(); 
+            this.product = this.getEmptyProduct();
+            this.product.sku = 'Invalid sku';
+            return;
+        }
+
+        try {
             this.product = await getProduct(productId).call();
-        } catch(e) {
+        } catch (e) {
             console.log(e);
         }
     },
@@ -184,12 +216,15 @@ const App = {
         let graphics = document.getElementById('graphics');
 
         for (let i = 0; i < position; i++) {
+            graphics.children[i].classList.remove('inactive');
             graphics.children[i].classList.add('completed');
         }
 
         if (status != 'Sold') {
-            graphics.children[position].classList.add('in_progress');
+            graphics.children[position].classList.remove('inactive');
+            graphics.children[position].classList.add('in_process');
         } else {
+            graphics.children[position].classList.remove('inactive');
             graphics.children[position].classList.add('completed');
         }
     },
@@ -200,198 +235,251 @@ const App = {
             console.log(image);
             image.classList.remove('in_process');
             image.classList.remove('completed');
+            image.classList.add('inactive');
         });
     },
 
     updateButtons: function() {
-        const beansState = this.getInput('State');
-        const productState = this.getInput('ProductState');
+        const beansState = this.beans.state;
+        const productState = this.product.state;
 
-        disableAllButtons();
+        this.disableAllButtons();
         switch(beansState) {
             case 'Planted':
-                if (beans.planter == address) {
-                    enableButton('collectButton');
+                if (this.beans.planter == this.account) {
+                    this.enableButton('collectButton');
                 }
                 break;
             case 'Collected':
-                if (beans.planter == address && beans.carrier == "") {
-                    enableButton('setCarrierButton');
+                if (this.beans.planter == this.account && Web3.utils.toBN(this.beans.carrier).isZero()) {
+                    this.enableButton('setCarrierButton');
                 }
 
-                if (beans.carrier == address) {
-                    enableButton('startTranferButton');
+                if (this.beans.carrier == this.account) {
+                    this.enableButton('startTranferButton');
                 }
                 break;
             case 'InTransfer':
                 /// setManufacturer
                 // endTransfer
-                if (beans.carrier == address && beans.manufacturer == "") {
-                    enableButton('setManufactirerButton');
+                if (this.beans.carrier == this.account && Web3.utils.toBN(this.beans.manufacturer).isZero()) {
+                    this.enableButton('setManufactirerButton');
                 }
 
-                if (beans.manufacturer == address) {
-                    enableButton('endTransferButton');
+                if (this.beans.manufacturer == this.account) {
+                    this.enableButton('endTransferButton');
                 }
                 break;
             case 'Transfered':
-                if (beans.carrier == address) {
-                    enableButton('manufacureButton');
+                if (this.beans.carrier == this.account && this.product.state == "") {
+                    this.enableButton('manufacureButton');
                 }
                 break;
         }
 
         switch(productState) {
             case 'Created':
-                if (product.manufacturer == address) {
-                    enableButton('setSellerButton');
+                if (this.product.manufacturer == this.account && Web3.utils.toBN(this.product.seller).isZero()) {
+                    this.enableButton('setSellerButton');
                 }
 
-                if (product.seller == address) {
-                    enableButton('distributeButton');
+                if (this.product.seller == this.account) {
+                    this.enableButton('distributeButton');
                 }
                 break;
             case 'Distributed':
-                if (product.seller == address) {
-                    enableButton('sellButton');
+                if (this.product.seller == this.account) {
+                    this.enableButton('sellButton');
                 }
                 break;
         }
     },
 
     disableAllButtons: function() {
-        this.disabledButtonsList.forEach((id) => disableButton(id));
+        this.disabledButtonsList.forEach((id) => this.disableButton(id));
     },
 
     disableButton: function(id) {
-        document.getElementById(id).disabled = false;
+        document.getElementById(id).disabled = true;
     },
 
     enableButton: function(id) {
-        document.getEleementById(id).disabled = true;
+        document.getElementById(id).disabled = false;
     },
 
     setEvents: function() {
-    	this.meta.events.Planted({
-    		filter: { planter: address }
-    	}, function(error, event) { console.log(event); })
-    	.on('data', (event) => {
-    		let beansId = event.returnValues.sku;
-    		this.getDataAndRefresh('Beans', beansId);
-    	});
+    	// this.meta.events.Planted({
+    	// 	filter: { planter: this.account }
+    	// }, function(error, event) { console.log(event); })
+    	// .on('data', (event) => {
+    	// 	let beansId = event.returnValues.sku;
+    	// 	this.getDataAndRefresh('Beans', beansId);
+    	// });
 
-    	this.meta.events.Created({
-    		filter: { manufacturer: address }
-    	}, (error, event) => console.log(event))
-    	.on('data', (event) => {
-    		let productId = event.returnValues.sku;
-    		this.getDataAndRefresh('Product', productId);
-    	});
+    	// this.meta.events.Created({
+    	// 	filter: { manufacturer: this.account }
+    	// }, (error, event) => console.log(event))
+    	// .on('data', (event) => {
+    	// 	let productId = event.returnValues.sku;
+    	// 	this.getDataAndRefresh('Product', productId);
+    	// });
 
 
-    	if (isBenasOnly()) {
-    		let beansId = this.beans.sku;
-    		this.updateBeansEvents.forEach((event) => this.meta.events[event]({
-    			filter: { sku: this.beansId }
-    		}, (error, event) => console.log(event))
-    		.on('data', (event) => {
-    			getDataAndRefresh('Beans', beans.sku)
-    		}));
-    	}
+    	let beansId = this.beans.sku;
+    	this.updateBeansEvents.forEach((event) => this.meta.events[event]({
+    		filter: { sku: this.beansId }
+    	}, (error, event) => {
+            if (error) {
+                console.log(error);
+            }
+            console.log(event);
+            this.getDataAndRefresh('Beans', this.beans.sku);
+        }));
 
-    	if (isProduct()) {
+    	if (isProduct()) { ///!!! Не робит
     		let productId = this.product.sku;
     		this.updateProductEvents.forEach((event) => this.meta.events[event]({
     			filter: { sku: productId }
-    		}, (error, event) => console.log(event))
-    		.on('data', (event) => {
-    			getDataAndRefresh('Product', product.sku);
-    		}));
+    		}, (error, event) => {
+                if (error) {
+                    console.log(error);
+                }
+                this.getDataAndRefresh('Product', this.product.sku);
+            }));
     	}
     },
 
     isNoBeans: function () {
-    	return this.beans.sku == "";
+    	return this.beans.state == "";
     },
 
     isBeansOnly: function () {
-    	return this.beans.sku != "" && this.product.sku == "";
+    	return this.beans.state != "" && this.product.state == "";
     },
 
     isProduct: function () {
-    	return this.product.sku != "";
+    	return this.product.state != "";
     },
 
     plant: async function() {
-        const brand = Web3.utils.asciiToHex(this.getInput('in_brand'));
-        const country = Web3.utils.asciiToHex(this.getInput('in_country'));
+        const brand = Web3.utils.asciiToHex(this.getAndClearInput('in_brand'));
+        const country = Web3.utils.asciiToHex(this.getAndClearInput('in_country'));
         let { plant } = this.meta.methods;
+
+        this.meta.once('Planted', {
+            filter: { planter: this.account }
+        }, (error, event) => {
+            if (error) {
+                console.log(error);
+            }
+            let beansId = event.returnValues.sku;
+            console.log(beansId);
+            this.getDataAndRefresh('Beans', beansId);
+        });
+        // this.meta.events.Planted({
+        //     filter: { planter: this.account }
+        // }, function(error, event) { console.log(event); })
+        // .on('data', (event) => {
+        //     console.log('Here');
+        //     let beansId = event.returnValues.sku;
+        //     this.getDataAndRefresh('Beans', beansId);
+        // });
+
         await plant(brand, country).send({ from: this.account });
     },
 
     collect: async function() {
         const beansId = this.beans.sku;
-        const weight = this.getInput('in_weight');
-        const weightMeasure = this.getInput('in_measure');
+        const weight = this.getAndClearInput('in_weight');
+        const weightMeasure = Web3.utils.asciiToHex(this.getAndClearInput('in_measure'));
         let { collect } = this.meta.methods;
-        await collect(beansId, weight, weightMeasure).send({ from: account });
+        await collect(beansId, weight, weightMeasure).send({ from: this.account });
     },
 
     setCarrier: async function() {
         const beansId = this.beans.sku;
-        const carrier = this.getInput('in_carrier');
+        const carrier = this.getAndClearInput('in_carrier');
         let { setCarrier } = this.meta.methods;
-        await setCarrier(beansId, carrier).send({ from: account });
+        await setCarrier(beansId, carrier).send({ from: this.account });
     },
 
     startTransfer: async function() {
         const beansId = this.beans.sku;
         let { startTransfer } = this.meta.methods;
-        await startTransfer(beandId).send({ from: account });
+        await startTransfer(beansId).send({ from: this.account });
     },
 
     setManufacturer: async function() {
         const beansId = this.beans.sku;
-        const manufacture = this.getInput('in_manufacturer');
+        const manufacture = this.getAndClearInput('in_manufacturer');
         let { setManufacturer } = this.meta.methods;
-        await setManufacturer(beansId, manufacture).send({ from: account });
+        await setManufacturer(beansId, manufacture).send({ from: this.account });
     },
 
     endTransfer: async function() {
         const beansId = this.beans.sku;
         const { endTransfer } = this.meta.methods;
-        await endTransfer(beansId).send({ from: account });
+        await endTransfer(beansId).send({ from: this.account });
     },
 
     manufacture: async function() {
         const beansId = this.beans.sku;
-        const description = this.getInput('in_description');
-        const productType = this.getInput('in_productType');
+        const description = this.getAndClearInput('in_description');
+        const productType = Web3.utils.asciiToHex(this.getAndClearInput('in_productType'));
         const { manufacture } = this.meta.methods;
-        await manufacture(beansId, description, productType).send({ from: account });
+
+        this.meta.once('Manufactured', {
+            filter: { manufacturer: this.account }
+        }, (error, event) => {
+            if (error) {
+                console.log(error);
+            }
+            let productId = event.returnValues.sku;
+            this.getDataAndRefresh('Product', productId);
+        });
+
+        await manufacture(beansId, description, productType).send({ from: this.account });
     },
 
     setSeller: async function() {
         const productId = this.product.sku;
-        const seller = this.getInput('in_seller');
+        const seller = this.getAndClearInput('in_seller');
         const { setSeller } = this.meta.methods;
-        await setSeller(productId, seller).send({ from: account });
+        await setSeller(productId, seller).send({ from: this.account });
     },
 
     distribute: async function() { 
         const productId = this.product.sku;
         const { distribute } = this.meta.methods;
-        await distribute(productId).send({ from: account });
+        await distribute(productId).send({ from: this.account });
     },
 
     sell: async function() {
         const productId = this.product.sku;
         const { sell } = this.meta.methods;
-        await sell(productId).send({ from: account });
+        await sell(productId).send({ from: this.account });
     },
 
     getInput: function(id) {
         return document.getElementById(id).value;
+    },
+
+    getAndClearInput: function(id) {
+        let result = document.getElementById(id).value;
+        document.getElementById(id).value = "";
+        return result;
+    },
+
+    getEmptyBeans: function() {
+        let result = {};
+        this.beansFields.forEach(field => result[field] = "");
+        return result;
+    },
+
+    getEmptyProduct: function() {
+        let result = {};
+        this.productFields.forEach(field => result[field] = "");
+        return result;
     }
 };
 

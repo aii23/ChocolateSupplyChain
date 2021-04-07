@@ -19,6 +19,7 @@ contract ProductSupply is BeansSupply {
 	uint lastProduct;
 
 	event Manufactured(uint indexed sku, address indexed manufacturer);
+	event SellerSetted(uint indexed sku);
 	event Distributed(uint indexed sku);
 	event Sold(uint indexed sku);
 
@@ -57,9 +58,10 @@ contract ProductSupply is BeansSupply {
 
 	function setSeller(uint _sku, address _seller) onlyProductState(_sku, ProductState.Created) onlyProductManufectirer(_sku) public {
 		products[_sku].seller = _seller;
+		emit SellerSetted(_sku);
 	}
 
-	function ditribute(uint _sku) onlyProductState(_sku, ProductState.Created) onlyProductSeller(_sku) public {
+	function distribute(uint _sku) onlyProductState(_sku, ProductState.Created) onlyProductSeller(_sku) public {
 		products[_sku].state = ProductState.Distributed;
 		emit Distributed(_sku);
 	}
@@ -92,7 +94,7 @@ contract ProductSupply is BeansSupply {
 		address manufacturer,
 		address seller
 	) {
-		require(_sku < lastProduct);
+		require(_sku < lastProduct, 'Invalid sku');
 		Product memory product = products[_sku];
 		sku = product.sku;
 		beansSku = product.beansSku;
@@ -112,11 +114,14 @@ contract ProductSupply is BeansSupply {
 		address manufacturer,
 		address seller
 	) {
-		require(_beansSku < lastBeans);
+		require(_beansSku < lastBeans, 'Invalid sku');
 
 		uint curSku = 0;
 
 		while(products[curSku].beansSku != _beansSku) {
+			if (curSku >= lastProduct) {
+				revert('No such product');
+			}
 			curSku++;
 		}
 
@@ -134,6 +139,7 @@ contract ProductSupply is BeansSupply {
 		address carrier,
 		address manufacturer
 	) {
+		require(_productSku < lastProduct, 'Invalid sku');
 		return getBeans(products[_productSku].beansSku);
 	}
 
