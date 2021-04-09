@@ -166,9 +166,11 @@ describe('Simple Forward Process', async () => {
 
 	it('Can manufecture', async () => {
 		let instance = await ProductSupply.deployed();
+		let imageHash = 'QmTiAqhp9bs4VoHTX8R4tLwNyAoX5ws18pMGVE22VtiQeC';
 		let description = 'Chocolate bar';
 		let productType = 'Chocolate';
-		let { logs } = await instance.manufacture(beansId, description, web3.utils.asciiToHex(productType), { from: manufacturer});
+
+		let { logs } = await instance.manufacture(beansId, imageHash, description, web3.utils.asciiToHex(productType), { from: manufacturer});
 		assert.equal(logs.length, 1);
 		let log = logs[0];
 		assert.equal(log.event, 'Manufactured');
@@ -179,6 +181,7 @@ describe('Simple Forward Process', async () => {
 		// console.log(product);
 		// let product = getProduct(productId);
 		assert.equal(product.beansSku.toString(), beansId.toString());
+		assert.equal(product.imageHash, imageHash);
 		assert.equal(product.description, description);
 		assert.equal(product.productType, productType);
 		assert.equal(product.state, 'Created');

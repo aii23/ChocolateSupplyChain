@@ -71,6 +71,13 @@
                     <tr>
                         <th>Country</th>
                         <td id='Country'></td>
+
+                        <th>Image</th>
+                        <td>
+                            <div>
+                                <img id='ProductImage' src="http://htmlbook.ru/images/logo.gif" width="100" height="100">
+                            </div>
+                        </td>
                     </tr>
                     <tr>
                         <th>Planter</th>
@@ -110,7 +117,7 @@
                 </p>
                 <p>
                     <input id='in_weight' placeholder='Weight'>
-                    <input id='in_measure' placeholder='Weight Measure'>
+                    <input id='in_measure' placeholder='Weight Measure' maxlength='2'>
                     <button id='collectButton' onclick='App.collect()' disabled>
                         Сollect
                     </button>
@@ -140,6 +147,7 @@
                 <p>
                     <input id='in_description' placeholder='Product Description'>
                     <input id='in_productType' placeholder='Product Type'>
+                    <input id='image_input' type='file' onChange='App.imageUpload()'>
                     <button id='manufacureButton' onclick='App.manufacture()' disabled>
                         Manufacture
                     </button>

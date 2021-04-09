@@ -7,6 +7,7 @@ contract ProductSupply is BeansSupply {
 	struct Product {
 		uint sku;
 		uint beansSku;
+		string imageHash;
 		string description;
 		bytes32 productType;
 		ProductState state;
@@ -42,10 +43,11 @@ contract ProductSupply is BeansSupply {
 		lastProduct = 0;
 	} 
 
-	function manufacture(uint _beansSku, string memory _description, bytes32 _productType) onlyBeansManufectirer(_beansSku) public {
+	function manufacture(uint _beansSku, string memory _imageHash, string memory _description, bytes32 _productType) onlyBeansManufectirer(_beansSku) public {
 		products[lastProduct] = Product(
 			lastProduct, 
 			_beansSku, 
+			_imageHash,
 			_description, 
 			_productType, 
 			ProductState.Created, 
@@ -88,6 +90,7 @@ contract ProductSupply is BeansSupply {
 	function getProduct(uint _sku) view public returns(
 		uint sku,
 		uint beansSku,
+		string memory imageHash,
 		string memory description,
 		string memory productType,
 		string memory state,
@@ -98,13 +101,14 @@ contract ProductSupply is BeansSupply {
 		Product memory product = products[_sku];
 		sku = product.sku;
 		beansSku = product.beansSku;
+		imageHash = product.imageHash;
 		description = product.description;
 		productType = bytes32ToString(product.productType);
 		state = getProductState(_sku);
 		manufacturer = product.manufacturer;
 		seller = product.seller;
 	}
-
+	/*
 	function getProductByBeans(uint _beansSku) view public returns(
 		uint sku,
 		uint beansSku,
@@ -127,6 +131,7 @@ contract ProductSupply is BeansSupply {
 
 		return getProduct(curSku);
 	}
+	*/
 
 	function getBeansByProduct(uint _productSku) view public returns(
 		uint sku,

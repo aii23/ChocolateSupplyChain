@@ -1,6 +1,7 @@
 import Web3 from "web3";
 import "./style.css";
 import productSupplyArtifact from "../../build/contracts/ProductSupply.json";
+const IPFS = require('ipfs-api')
 
 function requireAll(r) { r.keys().forEach(r); }
 requireAll(require.context('./images/', true, /\.png$/));
@@ -9,8 +10,12 @@ const App = {
     web3: null,
     account: null,
     meta: null,
+    ipfs: null,
     beans: {}, 
     product: {},
+    imageBuffer: null,
+
+    buffer: Buffer, //!!!
 
     disabledButtonsList: [
         'collectButton',
@@ -64,7 +69,7 @@ const App = {
     ],
 
     productFields: [
-        "sku", "description", "productType", "state", "seller"
+        "sku", "imageHash", "description", "productType", "state", "seller"
     ],
 
     start: async function() {
@@ -85,6 +90,8 @@ const App = {
             // get accounts
             const accounts = await web3.eth.getAccounts();
             this.account = accounts[0];
+            
+            this.ipfs = new IPFS({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' });
         } catch (error) {
             console.error("Could not connect to contract or chain.");
         }
@@ -179,6 +186,7 @@ const App = {
         const carrierElement = document.getElementById('Carrier');
         const manufacturerElement = document.getElementById('Manufacturer');
         const productIdElement = document.getElementById('ProductId');
+        const productImageElement = document.getElementById('ProductImage');
         const productDescriptionElement = document.getElementById('ProductDescription');
         const productTypeElement = document.getElementById('ProductType');
         const productStateElement = document.getElementById('ProductState');
@@ -194,6 +202,7 @@ const App = {
         carrierElement.innerHTML = this.beans.carrier;
         manufacturerElement.innerHTML = this.beans.manufacturer;
         productIdElement.innerHTML = this.product.sku;
+        productImageElement.src = 'https://ipfs.io/ipfs/' + this.product.imageHash;
         productDescriptionElement.innerHTML = this.product.description;
         productTypeElement.innerHTML = this.product.productType;
         productStateElement.innerHTML = this.product.state;
@@ -336,7 +345,7 @@ const App = {
             this.getDataAndRefresh('Beans', this.beans.sku);
         }));
 
-    	if (isProduct()) { ///!!! Не робит
+    	if (this.isProduct()) { ///!!! Не робит
     		let productId = this.product.sku;
     		this.updateProductEvents.forEach((event) => this.meta.events[event]({
     			filter: { sku: productId }
@@ -428,6 +437,8 @@ const App = {
         const productType = Web3.utils.asciiToHex(this.getAndClearInput('in_productType'));
         const { manufacture } = this.meta.methods;
 
+        let imageHash = await this.ipfsUploadImage();
+
         this.meta.once('Manufactured', {
             filter: { manufacturer: this.account }
         }, (error, event) => {
@@ -438,7 +449,7 @@ const App = {
             this.getDataAndRefresh('Product', productId);
         });
 
-        await manufacture(beansId, description, productType).send({ from: this.account });
+        await manufacture(beansId, imageHash, description, productType).send({ from: this.account });
     },
 
     setSeller: async function() {
@@ -480,6 +491,37 @@ const App = {
         let result = {};
         this.productFields.forEach(field => result[field] = "");
         return result;
+    },
+
+    ipfsUploadImage: function() {
+        //App.ipfs.files.add((new TextEncoder).encode('12345'), (error, result) => {console.log(error); console.log(result);})
+        if (!this.imageBuffer) {
+            console.log('No image');
+            throw Error('No image');
+        }
+
+        return this.ipfs.files.add(this.imageBuffer).
+        then(res => res[0].hash).
+        catch(error => console.log(error));
+
+        // this.ipfs.files.add(this.imageBuffer, (error, result) => {
+        //     if (error) {
+        //         console.log(error);
+        //         return;
+        //     }
+
+        //     this.imageHash = result[0].hash; 
+        // });
+    },
+
+    imageUpload: function() {
+        let file = document.getElementById('image_input').files[0];
+        let reader = new FileReader();
+        reader.readAsArrayBuffer(file);
+        reader.onloadend = () => {
+            this.imageBuffer = Buffer(reader.result);
+            console.log(this.imageBuffer);
+        }
     }
 };
 
