@@ -1,4 +1,4 @@
-pragma solidity ^0.5.16;
+pragma solidity ^0.6.0;
 
 import "./BeansSupply.sol";
 
@@ -108,30 +108,6 @@ contract ProductSupply is BeansSupply {
 		manufacturer = product.manufacturer;
 		seller = product.seller;
 	}
-	/*
-	function getProductByBeans(uint _beansSku) view public returns(
-		uint sku,
-		uint beansSku,
-		string memory description,
-		string memory productType,
-		string memory state,
-		address manufacturer,
-		address seller
-	) {
-		require(_beansSku < lastBeans, 'Invalid sku');
-
-		uint curSku = 0;
-
-		while(products[curSku].beansSku != _beansSku) {
-			if (curSku >= lastProduct) {
-				revert('No such product');
-			}
-			curSku++;
-		}
-
-		return getProduct(curSku);
-	}
-	*/
 
 	function getBeansByProduct(uint _productSku) view public returns(
 		uint sku,
@@ -147,16 +123,4 @@ contract ProductSupply is BeansSupply {
 		require(_productSku < lastProduct, 'Invalid sku');
 		return getBeans(products[_productSku].beansSku);
 	}
-
-	function bytes32ToString(bytes32 _bytes32) public pure returns (string memory) {
-        uint8 i = 0;
-        while(i < 32 && _bytes32[i] != 0) {
-            i++;
-        }
-        bytes memory bytesArray = new bytes(i);
-        for (i = 0; i < 32 && _bytes32[i] != 0; i++) {
-            bytesArray[i] = _bytes32[i];
-        }
-        return string(bytesArray);
-    }
 }

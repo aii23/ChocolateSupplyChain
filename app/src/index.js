@@ -1,6 +1,6 @@
 import Web3 from "web3";
 import "./style.css";
-import productSupplyArtifact from "../../build/contracts/ProductSupply.json";
+import coreArtifact from "../../build/contracts/Core.json";
 const IPFS = require('ipfs-api')
 
 function requireAll(r) { r.keys().forEach(r); }
@@ -14,8 +14,6 @@ const App = {
     beans: {}, 
     product: {},
     imageBuffer: null,
-
-    buffer: Buffer, //!!!
 
     disabledButtonsList: [
         'collectButton',
@@ -65,11 +63,11 @@ const App = {
     ],
 
     beansFields: [
-        "sku", "weight", "brand", "weightMeasure", "state", "country", "planter", "carrier", "manufacturer"
+        'sku', 'weight', 'brand', 'weightMeasure', 'state', 'country', 'planter', 'carrier', 'manufacturer'
     ],
 
     productFields: [
-        "sku", "imageHash", "description", "productType", "state", "seller"
+        'sku', 'imageHash', 'description', 'productType', 'state', 'seller'
     ],
 
     start: async function() {
@@ -77,13 +75,10 @@ const App = {
 
         try {
             // get contract instance
-            console.log('Start');
             const networkId = await web3.eth.net.getId();
-            console.log(networkId);
-            const deployedNetwork = productSupplyArtifact.networks[networkId];
-            console.log(deployedNetwork);
+            const deployedNetwork = coreArtifact.networks[networkId];
             this.meta = new web3.eth.Contract(
-                productSupplyArtifact.abi,
+                coreArtifact.abi,
                 deployedNetwork.address,
             );
 
@@ -111,8 +106,8 @@ const App = {
         this.setEvents();
     },
 
+    // Fetch data from blockchain and update graphics and buttons availability
     getDataAndRefresh: async function(dataType, id) {
-    	console.log(`${dataType} : ${id}`);
         if (dataType == 'Beans') {
             await this.getDataByBeans(id);
         } else if (dataType == 'Product') {
@@ -121,15 +116,12 @@ const App = {
             throw new Error('Wrong error');
         }
 
-        console.log(this.beans);
-        console.log(this.product);
-
         this.updateData(); 
         this.updateGraphics();
         this.updateButtons();
-        // this.setEvents();
     },
 
+    // Fetch data from blockchain using beans sku 
     getDataByBeans: async function(beansId) {
         const { getBeans } = this.meta.methods;
         const { getProductByBeans } = this.meta.methods;
@@ -138,22 +130,14 @@ const App = {
             this.beans = await getBeans(beansId).call();
             this.product = this.getEmptyProduct();
         } catch(e) {
-            console.log(e);
             this.beans = this.getEmptyBeans(); 
             this.beans.sku = 'Invalid sku';
             this.product = this.getEmptyProduct();
             return;
         }
-        /*
-        try {
-            this.product = await getProductByBeans(beansId).call();
-        } catch(e) {
-            console.log(e);
-            this.product = this.getEmptyProduct();
-        }
-        */
     },
 
+    // Fetch data from blockchain using product sku
     getDataByProduct: async function(productId) {
         const { getProduct } = this.meta.methods;
         const { getBeansByProduct } = this.meta.methods;
@@ -175,6 +159,7 @@ const App = {
         }
     },
 
+    // Update beans and product fields
     updateData: function() {
         const beansIdElement = document.getElementById('BeansId');
         const beansWeightElement = document.getElementById('BeansWeight');
@@ -215,7 +200,7 @@ const App = {
 
         this.removeGraphicsClasses();
 
-        if (this.beans.sku == "") {
+        if (this.beans.sku == '' || this.beans.sku == 'Invalid sku') {
             return;
         }
 
@@ -238,16 +223,17 @@ const App = {
         }
     },
 
+    // Set all graphics element to inactive state
     removeGraphicsClasses: function() {
         this.graphicsItemsId.forEach((id) => {
             let image = document.getElementById(id);
-            console.log(image);
             image.classList.remove('in_process');
             image.classList.remove('completed');
             image.classList.add('inactive');
         });
     },
 
+    // Update buttons availability based on beans or product state
     updateButtons: function() {
         const beansState = this.beans.state;
         const productState = this.product.state;
@@ -269,8 +255,6 @@ const App = {
                 }
                 break;
             case 'InTransfer':
-                /// setManufacturer
-                // endTransfer
                 if (this.beans.carrier == this.account && Web3.utils.toBN(this.beans.manufacturer).isZero()) {
                     this.enableButton('setManufactirerButton');
                 }
@@ -316,24 +300,9 @@ const App = {
         document.getElementById(id).disabled = false;
     },
 
+    // Listen to events from blockchain to update data. 
+    // Listeners for events 'Planted' and 'Manufactured' are located in functions 'plant' and 'manufacture' respectively 
     setEvents: function() {
-    	// this.meta.events.Planted({
-    	// 	filter: { planter: this.account }
-    	// }, function(error, event) { console.log(event); })
-    	// .on('data', (event) => {
-    	// 	let beansId = event.returnValues.sku;
-    	// 	this.getDataAndRefresh('Beans', beansId);
-    	// });
-
-    	// this.meta.events.Created({
-    	// 	filter: { manufacturer: this.account }
-    	// }, (error, event) => console.log(event))
-    	// .on('data', (event) => {
-    	// 	let productId = event.returnValues.sku;
-    	// 	this.getDataAndRefresh('Product', productId);
-    	// });
-
-
     	let beansId = this.beans.sku;
     	this.updateBeansEvents.forEach((event) => this.meta.events[event]({
     		filter: { sku: this.beansId }
@@ -341,11 +310,10 @@ const App = {
             if (error) {
                 console.log(error);
             }
-            console.log(event);
             this.getDataAndRefresh('Beans', this.beans.sku);
         }));
 
-    	if (this.isProduct()) { ///!!! Не робит
+    	if (this.isProduct()) {
     		let productId = this.product.sku;
     		this.updateProductEvents.forEach((event) => this.meta.events[event]({
     			filter: { sku: productId }
@@ -370,6 +338,7 @@ const App = {
     	return this.product.state != "";
     },
 
+    // Method for button #plantButton
     plant: async function() {
         const brand = Web3.utils.asciiToHex(this.getAndClearInput('in_brand'));
         const country = Web3.utils.asciiToHex(this.getAndClearInput('in_country'));
@@ -382,21 +351,14 @@ const App = {
                 console.log(error);
             }
             let beansId = event.returnValues.sku;
-            console.log(beansId);
             this.getDataAndRefresh('Beans', beansId);
+            this.setEvents();
         });
-        // this.meta.events.Planted({
-        //     filter: { planter: this.account }
-        // }, function(error, event) { console.log(event); })
-        // .on('data', (event) => {
-        //     console.log('Here');
-        //     let beansId = event.returnValues.sku;
-        //     this.getDataAndRefresh('Beans', beansId);
-        // });
 
         await plant(brand, country).send({ from: this.account });
     },
 
+    // Method for button #collectButton
     collect: async function() {
         const beansId = this.beans.sku;
         const weight = this.getAndClearInput('in_weight');
@@ -405,6 +367,7 @@ const App = {
         await collect(beansId, weight, weightMeasure).send({ from: this.account });
     },
 
+    // Method for button #setCarrierButton
     setCarrier: async function() {
         const beansId = this.beans.sku;
         const carrier = this.getAndClearInput('in_carrier');
@@ -412,12 +375,14 @@ const App = {
         await setCarrier(beansId, carrier).send({ from: this.account });
     },
 
+    // Method for button #startTranferButton
     startTransfer: async function() {
         const beansId = this.beans.sku;
         let { startTransfer } = this.meta.methods;
         await startTransfer(beansId).send({ from: this.account });
     },
 
+    // Method for button #setManufactirerButton
     setManufacturer: async function() {
         const beansId = this.beans.sku;
         const manufacture = this.getAndClearInput('in_manufacturer');
@@ -425,12 +390,14 @@ const App = {
         await setManufacturer(beansId, manufacture).send({ from: this.account });
     },
 
+    // Method for button #endTransferButton
     endTransfer: async function() {
         const beansId = this.beans.sku;
         const { endTransfer } = this.meta.methods;
         await endTransfer(beansId).send({ from: this.account });
     },
 
+    // Method for button #manufacureButton
     manufacture: async function() {
         const beansId = this.beans.sku;
         const description = this.getAndClearInput('in_description');
@@ -447,11 +414,13 @@ const App = {
             }
             let productId = event.returnValues.sku;
             this.getDataAndRefresh('Product', productId);
+            this.setEvents();
         });
 
         await manufacture(beansId, imageHash, description, productType).send({ from: this.account });
     },
 
+    // Method for button #setSellerButton
     setSeller: async function() {
         const productId = this.product.sku;
         const seller = this.getAndClearInput('in_seller');
@@ -459,12 +428,14 @@ const App = {
         await setSeller(productId, seller).send({ from: this.account });
     },
 
+    // Method for button #distributeButton
     distribute: async function() { 
         const productId = this.product.sku;
         const { distribute } = this.meta.methods;
         await distribute(productId).send({ from: this.account });
     },
 
+    // Method for button #sellButton
     sell: async function() {
         const productId = this.product.sku;
         const { sell } = this.meta.methods;
@@ -493,8 +464,8 @@ const App = {
         return result;
     },
 
+    // Upload image read with imageUpload to IPFS
     ipfsUploadImage: function() {
-        //App.ipfs.files.add((new TextEncoder).encode('12345'), (error, result) => {console.log(error); console.log(result);})
         if (!this.imageBuffer) {
             console.log('No image');
             throw Error('No image');
@@ -503,17 +474,9 @@ const App = {
         return this.ipfs.files.add(this.imageBuffer).
         then(res => res[0].hash).
         catch(error => console.log(error));
-
-        // this.ipfs.files.add(this.imageBuffer, (error, result) => {
-        //     if (error) {
-        //         console.log(error);
-        //         return;
-        //     }
-
-        //     this.imageHash = result[0].hash; 
-        // });
     },
 
+    // Read image when user pick it by #image_input 
     imageUpload: function() {
         let file = document.getElementById('image_input').files[0];
         let reader = new FileReader();

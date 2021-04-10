@@ -1,4 +1,4 @@
-const ProductSupply = artifacts.require("ProductSupply");
+const Core = artifacts.require("Core");
 
 var accounts;
 
@@ -54,18 +54,18 @@ async function getProduct(instance, sku) {
 	return result;
 }
 
-contract('ProductSupply', (accs) => {
+contract('Core', (accs) => {
     accounts = accs;
 });
 
-	// contract('ProductSupply', (accs) => {
+	// contract('Core', (accs) => {
  //    	accounts = accs;
 	// });
 
 	// it('Can plant', async () => {
 	// 	let brand = 'Forastero';
 	// 	let country = 'MX';
-	// 	let instance = await ProductSupply.deployed();
+	// 	let instance = await Core.deployed();
 	// 	let logs = await instance.plant(brand, country, { from: planter });
 	// 	assert.equal(logs.length, 1);
 
@@ -92,14 +92,14 @@ describe('Simple Forward Process', async () => {
 	let beansId = ""; 
 	let productId = "";
 
-	contract('ProductSupply', (accs) => {
+	contract('Core', (accs) => {
     	accounts = accs;
 	});
 
 	it('Can plant', async () => {
 		let brand = 'Forastero';
 		let country = 'MX';
-		let instance = await ProductSupply.deployed();
+		let instance = await Core.deployed();
 		let { logs } = await instance.plant(web3.utils.asciiToHex(brand), web3.utils.asciiToHex(country), { from: planter });
 		//console.log(logs);
 		assert.ok(Array.isArray(logs));
@@ -121,7 +121,7 @@ describe('Simple Forward Process', async () => {
 	});
 
 	it('Can collect', async () => {
-		let instance = await ProductSupply.deployed();
+		let instance = await Core.deployed();
 		let weight = 1000;
 		let weightMeasure = 'kg';
 		await instance.collect(beansId, weight, web3.utils.asciiToHex(weightMeasure), { from: planter });
@@ -133,7 +133,7 @@ describe('Simple Forward Process', async () => {
 	});
 
 	it('Can set carrier', async () => {
-		let instance = await ProductSupply.deployed();
+		let instance = await Core.deployed();
 		await instance.setCarrier(beansId, carrier, { from: planter });
 		let beans = await instance.getBeans(beansId);
 		// let beans = await getBeans(instance, beansId);
@@ -141,7 +141,7 @@ describe('Simple Forward Process', async () => {
 	});
 
 	it('Can start transfer', async () => {
-		let instance = await ProductSupply.deployed();
+		let instance = await Core.deployed();
 		await instance.startTransfer(beansId, { from: carrier });
 		let beans = await instance.getBeans(beansId);
 		// let beans = await getBeans(instance, beansId);
@@ -149,7 +149,7 @@ describe('Simple Forward Process', async () => {
 	});
 
 	it('Can set manufacturer', async () => {
-		let instance = await ProductSupply.deployed();
+		let instance = await Core.deployed();
 		await instance.setManufacturer(beansId, manufacturer, { from: carrier });
 		let beans = await instance.getBeans(beansId);
 		// let beans = await getBeans(instance, beansId);
@@ -157,7 +157,7 @@ describe('Simple Forward Process', async () => {
 	});
 
 	it('Can end transfer', async () => {
-		let instance = await ProductSupply.deployed();
+		let instance = await Core.deployed();
 		await instance.endTransfer(beansId, { from: manufacturer });
 		let beans = await instance.getBeans(beansId);
 		// let beans = await getBeans(instance, beansId);
@@ -165,7 +165,7 @@ describe('Simple Forward Process', async () => {
 	});
 
 	it('Can manufecture', async () => {
-		let instance = await ProductSupply.deployed();
+		let instance = await Core.deployed();
 		let imageHash = 'QmTiAqhp9bs4VoHTX8R4tLwNyAoX5ws18pMGVE22VtiQeC';
 		let description = 'Chocolate bar';
 		let productType = 'Chocolate';
@@ -188,7 +188,7 @@ describe('Simple Forward Process', async () => {
 	});
 
 	it('Can set seller', async () => {
-		let instance = await ProductSupply.deployed();
+		let instance = await Core.deployed();
 		await instance.setSeller(productId, seller, { from: manufacturer });
 
 		let product = await instance.getProduct(productId);
@@ -197,7 +197,7 @@ describe('Simple Forward Process', async () => {
 	});
 
 	it('Can distribute', async () => {
-		let instance = await ProductSupply.deployed();
+		let instance = await Core.deployed();
 		await instance.distribute(productId, { from: seller });
 		let product = await instance.getProduct(productId);
 		// let product = getProduct(productId);
@@ -205,7 +205,7 @@ describe('Simple Forward Process', async () => {
 	});
 
 	it('Can sell', async () => {
-		let instance = await ProductSupply.deployed();
+		let instance = await Core.deployed();
 		await instance.sell(productId, { from: seller });
 		let product = await instance.getProduct(productId);
 		// let product = getProduct(productId);
