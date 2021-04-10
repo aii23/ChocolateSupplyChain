@@ -109,14 +109,14 @@
                     </button>
                 </p>
                 <p>
-                    <input id='in_brand' placeholder='Brand'>
+                    <input id='in_brand' placeholder='Brand' maxLength='32'>
                     <input id='in_country' placeholder='Country' maxlength='2'>
                     <button id='plantButton' onclick='App.plant()'>
                         Plant
                     </button>
                 </p>
                 <p>
-                    <input id='in_weight' placeholder='Weight'>
+                    <input id='in_weight' placeholder='Weight' type="number">
                     <input id='in_measure' placeholder='Weight Measure' maxlength='2'>
                     <button id='collectButton' onclick='App.collect()' disabled>
                         Сollect
@@ -146,7 +146,7 @@
                 </p>
                 <p>
                     <input id='in_description' placeholder='Product Description'>
-                    <input id='in_productType' placeholder='Product Type'>
+                    <input id='in_productType' placeholder='Product Type' maxLength='32'>
                     <input id='image_input' type='file' onChange='App.imageUpload()'>
                     <button id='manufacureButton' onclick='App.manufacture()' disabled>
                         Manufacture

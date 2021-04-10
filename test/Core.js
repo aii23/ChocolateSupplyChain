@@ -2,9 +2,6 @@ const Core = artifacts.require("Core");
 
 var accounts;
 
-
-//!!!!!!!! Сравнивать BN через chai
-
 const beansField = {
     'sku': 0,
     'weight': 1,
@@ -39,49 +36,9 @@ const productFields = [
 	'seller'
 ];
 
-async function getBeans(instance, sku) {
-	let beans = await instance.getBeans(sku);
-	let result = {};
-	console.log(beans);
-	beans.forEach((elem, index) => result[beans[index]] = elem);
-	return result;
-}
-
-async function getProduct(instance, sku) {
-	let product = await instance.getProduct(sku);
-	let result = {};
-	product.forEach((elem, index) => result[product[index]] = elem);
-	return result;
-}
-
 contract('Core', (accs) => {
     accounts = accs;
 });
-
-	// contract('Core', (accs) => {
- //    	accounts = accs;
-	// });
-
-	// it('Can plant', async () => {
-	// 	let brand = 'Forastero';
-	// 	let country = 'MX';
-	// 	let instance = await Core.deployed();
-	// 	let logs = await instance.plant(brand, country, { from: planter });
-	// 	assert.equal(logs.length, 1);
-
-	// 	let log = logs[0];
-	// 	assert.equal(log.event, 'Planted');
-	// 	assert.equal(log.args.planter, planter);
-	// 	beansId = log.args.sku;
-
-	// 	let beans = await getBeans(instance, beansId);
-
-	// 	assert.equal(beans.brand, brand);
-	// 	assert.equal(beans.country, country);
-	// 	assert.equal(beans.planter, planter);
-	// 	assert.equal(beans.state, 'Planted');
-	// });
-
 
 describe('Simple Forward Process', async () => {
 
@@ -101,7 +58,6 @@ describe('Simple Forward Process', async () => {
 		let country = 'MX';
 		let instance = await Core.deployed();
 		let { logs } = await instance.plant(web3.utils.asciiToHex(brand), web3.utils.asciiToHex(country), { from: planter });
-		//console.log(logs);
 		assert.ok(Array.isArray(logs));
 		assert.equal(logs.length, 1);
 
@@ -111,8 +67,6 @@ describe('Simple Forward Process', async () => {
 		beansId = log.args.sku;
 
 		let beans = await instance.getBeans(beansId);
-		// console.log(beans);
-		// let beans = await getBeans(instance, beansId);
 
 		assert.equal(beans.brand, brand);
 		assert.equal(beans.country, country);
@@ -126,7 +80,6 @@ describe('Simple Forward Process', async () => {
 		let weightMeasure = 'kg';
 		await instance.collect(beansId, weight, web3.utils.asciiToHex(weightMeasure), { from: planter });
 		let beans = await instance.getBeans(beansId);
-		// let beans = await getBeans(instance, beansId);
 		assert.equal(beans.weight, weight);
 		assert.equal(beans.weightMeasure, weightMeasure);
 		assert.equal(beans.state, "Collected");
@@ -136,7 +89,6 @@ describe('Simple Forward Process', async () => {
 		let instance = await Core.deployed();
 		await instance.setCarrier(beansId, carrier, { from: planter });
 		let beans = await instance.getBeans(beansId);
-		// let beans = await getBeans(instance, beansId);
 		assert.equal(beans.carrier, carrier);
 	});
 
@@ -144,7 +96,6 @@ describe('Simple Forward Process', async () => {
 		let instance = await Core.deployed();
 		await instance.startTransfer(beansId, { from: carrier });
 		let beans = await instance.getBeans(beansId);
-		// let beans = await getBeans(instance, beansId);
 		assert.equal(beans.state, 'InTransfer');
 	});
 
@@ -152,7 +103,6 @@ describe('Simple Forward Process', async () => {
 		let instance = await Core.deployed();
 		await instance.setManufacturer(beansId, manufacturer, { from: carrier });
 		let beans = await instance.getBeans(beansId);
-		// let beans = await getBeans(instance, beansId);
 		assert.equal(beans.manufacturer, manufacturer);
 	});
 
@@ -160,7 +110,6 @@ describe('Simple Forward Process', async () => {
 		let instance = await Core.deployed();
 		await instance.endTransfer(beansId, { from: manufacturer });
 		let beans = await instance.getBeans(beansId);
-		// let beans = await getBeans(instance, beansId);
 		assert.equal(beans.state, "Transfered");
 	});
 
@@ -178,8 +127,6 @@ describe('Simple Forward Process', async () => {
 		productId = log.args.sku;
 
 		let product = await instance.getProduct(productId);
-		// console.log(product);
-		// let product = getProduct(productId);
 		assert.equal(product.beansSku.toString(), beansId.toString());
 		assert.equal(product.imageHash, imageHash);
 		assert.equal(product.description, description);
@@ -192,7 +139,6 @@ describe('Simple Forward Process', async () => {
 		await instance.setSeller(productId, seller, { from: manufacturer });
 
 		let product = await instance.getProduct(productId);
-		// let product = getProduct(productId);
 		assert.equal(product.seller, seller);
 	});
 
@@ -200,7 +146,6 @@ describe('Simple Forward Process', async () => {
 		let instance = await Core.deployed();
 		await instance.distribute(productId, { from: seller });
 		let product = await instance.getProduct(productId);
-		// let product = getProduct(productId);
 		assert.equal(product.state, 'Distributed');
 	});
 
@@ -208,7 +153,6 @@ describe('Simple Forward Process', async () => {
 		let instance = await Core.deployed();
 		await instance.sell(productId, { from: seller });
 		let product = await instance.getProduct(productId);
-		// let product = getProduct(productId);
 		assert.equal(product.state, 'Sold');
 	});
 });

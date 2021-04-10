@@ -483,7 +483,6 @@ const App = {
         reader.readAsArrayBuffer(file);
         reader.onloadend = () => {
             this.imageBuffer = Buffer(reader.result);
-            console.log(this.imageBuffer);
         }
     }
 };
