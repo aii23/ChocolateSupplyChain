@@ -13,7 +13,8 @@
   "description": "",
   "dependencies": {
     "@openzeppelin/contracts": "^3.4.1",
-    "chai": "^4.3.4"
+    "chai": "^4.3.4",
+    "truffle-hdwallet-provider": "^1.0.17"
   },
   "devDependencies": {
     "bn.js": "^5.2.0",
