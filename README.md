@@ -20,3 +20,17 @@ IPFS used for storing product image. Also web page was upload to IPFS via https:
 	0xcacc408081834f1238c479bb12a5c8d6d8cf67b3439f809fbd2b689522487542
 	- **Contract Address**: 
 	0x0A548C6B1124Bbfa9b67E265c22A7BCdd2A9FAD1
+
+### Install
+```
+npm install
+truffle compile
+cd app 
+npm install
+```
+
+### Run 
+```
+cd app
+npm run dev
+```
