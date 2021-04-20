@@ -36,12 +36,154 @@ const productFields = [
 	'seller'
 ];
 
+const zeroAddress = "0x0000000000000000000000000000000000000000";
+
+contract('Ownership transfer test', (accounts) => {
+	let initialOwner = accounts[0];
+	let newOwner = accounts[1];
+
+	it('Can transfer ownership', async () => {
+		let instance = await Core.deployed();
+		let { logs } = await instance.transferOwnership(newOwner, { from: initialOwner });
+		assert.ok(Array.isArray(logs));
+		assert.equal(logs.length, 1);
+
+		let log = logs[0];
+		assert.equal(log.event, 'OwnershipTransferred');
+		assert.equal(log.args.previousOwner, initialOwner);
+		assert.equal(log.args.newOwner, newOwner);
+	});
+
+	it('Can renounce ownership', async () => {
+		let instance = await Core.deployed();
+		let { logs } = await instance.renounceOwnership({ from: newOwner });
+		assert.ok(Array.isArray(logs));
+		assert.equal(logs.length, 1);
+
+		let log = logs[0];
+		assert.equal(log.event, 'OwnershipTransferred');
+		assert.equal(log.args.previousOwner, newOwner);
+		assert.equal(log.args.newOwner.toString(), zeroAddress);
+	});
+});
+
 contract('Core', (accs) => {
     accounts = accs;
 });
 
-describe('Simple Forward Process', async () => {
+describe('Access Control Tests', async () => {
+	let owner = accounts[0];
 
+	it('Can add planter', async () => {
+		let instance = await Core.deployed();
+		let secondPlanter = accounts[1];
+
+		let { logs } = await instance.addPlanter(secondPlanter, { from: owner });
+		assert.ok(Array.isArray(logs));
+		assert.equal(logs.length, 1);
+
+		let log = logs[0];
+		assert.equal(log.event, 'PlanterAdded');
+		assert.equal(log.args.account, secondPlanter);
+	});
+
+	it('Can remove planter', async () => {
+		let instance = await Core.deployed();
+		let secondPlanter = accounts[1];
+
+		let { logs } = await instance.renouncePlanter({ from: secondPlanter });
+		assert.ok(Array.isArray(logs));
+		assert.equal(logs.length, 1);
+
+		let log = logs[0];
+		assert.equal(log.event, 'PlanterRemoved');
+		assert.equal(log.args.account, secondPlanter);
+	});
+
+
+	it('Can add carrier', async () => {
+		let instance = await Core.deployed();
+		let secondCarrier = accounts[1];
+
+		let { logs } = await instance.addCarrier(secondCarrier, { from: owner });
+		assert.ok(Array.isArray(logs));
+		assert.equal(logs.length, 1);
+
+		let log = logs[0];
+		assert.equal(log.event, 'CarrierAdded');
+		assert.equal(log.args.account, secondCarrier);
+	});
+
+	it('Can remove carrier', async () => {
+		let instance = await Core.deployed();
+		let secondCarrier = accounts[1];
+
+		let { logs } = await instance.renounceCarrier({ from: secondCarrier });
+		assert.ok(Array.isArray(logs));
+		assert.equal(logs.length, 1);
+
+		let log = logs[0];
+		assert.equal(log.event, 'CarrierRemoved');
+		assert.equal(log.args.account, secondCarrier);
+	});
+
+
+	it('Can add manufacturer', async () => {
+		let instance = await Core.deployed();
+		let secondManufacturer = accounts[1];
+
+		let { logs } = await instance.addManufacturer(secondManufacturer, { from: owner });
+		assert.ok(Array.isArray(logs));
+		assert.equal(logs.length, 1);
+
+		let log = logs[0];
+		assert.equal(log.event, 'ManufacturerAdded');
+		assert.equal(log.args.account, secondManufacturer);
+	});
+
+	it('Can remove manufacturer', async () => {
+		let instance = await Core.deployed();
+		let secondManufacturer = accounts[1];
+
+		let { logs } = await instance.renounceManufacturer({ from: secondManufacturer });
+		assert.ok(Array.isArray(logs));
+		assert.equal(logs.length, 1);
+
+		let log = logs[0];
+		assert.equal(log.event, 'ManufacturerRemoved');
+		assert.equal(log.args.account, secondManufacturer);
+	});
+
+
+	it('Can add seller', async () => {
+		let instance = await Core.deployed();
+		let secondSeller = accounts[1];
+
+		let { logs } = await instance.addSeller(secondSeller, { from: owner });
+		assert.ok(Array.isArray(logs));
+		assert.equal(logs.length, 1);
+
+		let log = logs[0];
+		assert.equal(log.event, 'SellerAdded');
+		assert.equal(log.args.account, secondSeller);
+	});
+
+	it('Can remove seller', async () => {
+		let instance = await Core.deployed();
+		let secondSeller = accounts[1];
+
+		let { logs } = await instance.renounceSeller({ from: secondSeller });
+		assert.ok(Array.isArray(logs));
+		assert.equal(logs.length, 1);
+
+		let log = logs[0];
+		assert.equal(log.event, 'SellerRemoved');
+		assert.equal(log.args.account, secondSeller);
+	});
+});
+
+describe('Simple Forward Process', async () => {
+	let owner = accounts[0];
 	let planter = accounts[0];
 	let carrier = accounts[1];
 	let manufacturer = accounts[2];
@@ -49,8 +191,11 @@ describe('Simple Forward Process', async () => {
 	let beansId = ""; 
 	let productId = "";
 
-	contract('Core', (accs) => {
-    	accounts = accs;
+	it('Granted access', async () => {
+		let instance = await Core.deployed();
+		await instance.addCarrier(carrier, { from: owner });
+		await instance.addManufacturer(manufacturer, { from: owner });
+		await instance.addSeller(seller, { from: owner });
 	});
 
 	it('Can plant', async () => {
@@ -83,6 +228,11 @@ describe('Simple Forward Process', async () => {
 		assert.equal(beans.weight, weight);
 		assert.equal(beans.weightMeasure, weightMeasure);
 		assert.equal(beans.state, "Collected");
+	});
+
+	it('Can add carrier', async () => {
+		let instance = await Core.deployed();
+		await instance.setCarrier(beansId, carrier, { from: planter });
 	});
 
 	it('Can set carrier', async () => {

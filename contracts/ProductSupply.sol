@@ -59,6 +59,7 @@ contract ProductSupply is BeansSupply {
 	}
 
 	function setSeller(uint _sku, address _seller) onlyProductState(_sku, ProductState.Created) onlyProductManufectirer(_sku) public {
+		require(isSeller(_seller));
 		products[_sku].seller = _seller;
 		emit SellerSetted(_sku);
 	}

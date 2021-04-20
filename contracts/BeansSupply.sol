@@ -1,8 +1,12 @@
 pragma solidity ^0.6.0;
 
 import "./Helper.sol";
+import "./AccessControl/PlanterRole.sol";
+import "./AccessControl/ManufacturerRole.sol";
+import "./AccessControl/SellerRole.sol";
+import "./AccessControl/CarrierRole.sol";
 
-contract BeansSupply is Helper {
+contract BeansSupply is Helper, PlanterRole, ManufacturerRole, SellerRole, CarrierRole {
 	enum BeansState { Planted, Collected, InTransfer, Transfered }
 	struct Beans {
 		uint sku;
@@ -51,7 +55,7 @@ contract BeansSupply is Helper {
 		lastBeans = 0;
 	} 
 
-	function plant(bytes32 _brand, bytes2 _country) public {
+	function plant(bytes32 _brand, bytes2 _country) public onlyPlanter {
 		beans[lastBeans] = Beans(
 			lastBeans, 
 			0, 
@@ -75,16 +79,18 @@ contract BeansSupply is Helper {
 	}
 
 	function setCarrier(uint _sku, address _carrier) onlyBeansState(_sku, BeansState.Collected) onlyBeansPlanter(_sku) public {
+		require(isCarrier(_carrier));
 		beans[_sku].carrier = _carrier;
 		emit CarrierSetted(_sku);
 	}
 
-	function startTransfer(uint _sku) onlyBeansState(_sku, BeansState.Collected) onlyBeansCarrier(_sku) public {
+	function startTransfer(uint _sku) onlyBeansState(_sku, BeansState.Collected) onlyCarrier onlyBeansCarrier(_sku) public {
 		beans[_sku].state = BeansState.InTransfer;
 		emit InTransfer(_sku);
 	}
 
-	function setManufacturer(uint _sku, address _manufacturer) onlyBeansState(_sku, BeansState.InTransfer) onlyBeansCarrier(_sku) public {
+	function setManufacturer(uint _sku, address _manufacturer) onlyBeansState(_sku, BeansState.InTransfer) onlyCarrier onlyBeansCarrier(_sku) public {
+		require(isManufacturer(_manufacturer));
 		beans[_sku].manufacturer = _manufacturer;
 		emit ManufacturerSetted(_sku);
 	}
