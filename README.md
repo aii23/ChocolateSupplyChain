@@ -12,14 +12,14 @@ During this project was created supply chain for two entities - beans and produc
 
 ### IPFS 
 IPFS used for storing product image. Also web page was upload to IPFS via https://pinata.cloud/. 
-**Address**: https://gateway.pinata.cloud/ipfs/Qma3ihMoSmCRhLtZuzttVYPezoMvZ4mVtwNf9kaMqj3XbH/
+**Address**: https://gateway.pinata.cloud/ipfs/QmTHwGVvhMDbShsLUDcsfZDZ6fUHKmBZrbqC3ncnE1TZWP/
 
 ### Contract information 
 - Rinkeby
 	- **Transaction ID**:
-	0xcacc408081834f1238c479bb12a5c8d6d8cf67b3439f809fbd2b689522487542
+	0x823b3de76b095d18db90a7467903dac64173dc173862ed6169bfd4e03e6a541b
 	- **Contract Address**: 
-	0x0A548C6B1124Bbfa9b67E265c22A7BCdd2A9FAD1
+	0xF25Ba894e9beAC7750D9c82cB30824CeFb25585C
 
 ### Install
 ```
